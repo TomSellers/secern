@@ -28,7 +28,7 @@ sinks:
     file_name: dot_com.txt
     patterns:
       - '\.com$'
-- name: government_domains
+  - name: government_domains
     file_name: government.txt
     patterns:
       - '\.gov$'
