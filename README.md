@@ -50,7 +50,7 @@ the Rust `regex` crate which allows multiple regular expression patterns to be
 matched in a single pass.
 
 In tests under WSL2 on Windows 10 I've processed 100 million lines with 2 sinks
-and 9 regexs in about 25 seconds. Native Linux or Windows performance will be
+and 9 patterns in about 25 seconds. Native Linux or Windows performance will be
 higher.
 
 General advice to improve performance:
