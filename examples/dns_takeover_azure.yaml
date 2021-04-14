@@ -1,0 +1,40 @@
+---
+# This example configuration file can be used with the Rapid7 Open Data
+# FDNS 'ANY' dataset to identify domains that point to Azure resources.
+# The results can then be tested for possible subdomain takeover.
+# The R7 Open Data FDNS data is gzipped JSON.
+# Example command:
+# pigz -dc 2021-01-29-1611879052-fdns_any.json.gz | secern --config dns_takeover_azure.yaml -n
+#
+# Reference:
+#  https://docs.microsoft.com/en-us/azure/security/fundamentals/subdomain-takeover
+
+sinks:
+  # This sink removes any records that aren't a CNAME
+  - name: not_cname
+    # Define outout as 'null' so matches are thrown away
+    file_name: null
+    # Invert the match logic. If the line doesn't match the patterns
+    # then secern would normally process it with the following sinks
+    # but in this case, with invert, we treat it as a match.
+    # The result is that if a line DOESN'T contain the pattern then
+    # secern will write it to the sink's output, in this case 'null',
+    # and cease further processing of the line.
+    #
+    # This can be useful for filtering out data that is undesirable
+    # and it can optimize performance by not processing lines that
+    # couldn't or shouldn't be matched by later sinks.
+    invert: true
+    patterns:
+      - '"cname"'
+  - name: azure
+    file_name: azure.json
+    patterns:
+      - '\.azurewebsites\.net'
+      - '\.trafficmanager\.net'
+      - '\.azurefd\.net'
+      - '\.blob\.core\.windows\.net'
+      - '\.azureedge\.net'
+      - '\.cloudapp.azure\.com'
+      - '\.azurecontainer\.io'
+      - '\.azure-api\.net'

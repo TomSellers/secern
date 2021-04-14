@@ -10,6 +10,28 @@ The value that `secern` provides is
 
 ## Usage
 
+```shell
+$ secern -h
+
+secern 0.9.0
+Tom Sellers <tom@fadedcode.net>
+secern is a command line string filtering program that leverages
+regex patterns defined in a configuration file to sift data into
+specified output files.
+
+USAGE:
+    secern [FLAGS] --config <FILE>
+
+FLAGS:
+    -h, --help         Prints help information
+    -n, --no-stdout    Disables emmitting unfiltered data on STDOUT
+    -q, --quiet        Disables emmitting info level log events (version, run time, etc) on STDERR
+    -V, --version      Prints version information
+
+OPTIONS:
+    -c, --config <FILE>    Specifies the YAML config file
+```
+
 Bash
 
 ```bash
