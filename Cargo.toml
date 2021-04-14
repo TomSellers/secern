@@ -3,7 +3,7 @@ name = "secern"
 version = "0.9.0"
 authors = ["Tom Sellers <tom@fadedcode.net>"]
 description = """
-secern is a command line string filtering program that leverages
+secern is a command line string sifting program that leverages
 regex patterns defined in a configuration file to sift data into
 specified output files.
 """
