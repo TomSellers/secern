@@ -1,0 +1,3 @@
+# These files are text and should be normalized (convert crlf => lf)
+*.rs      text
+*.yaml    text eol=lf
