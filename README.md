@@ -71,7 +71,7 @@ regex patterns defined in a configuration file to sift data into
 specified output files.
 
 USAGE:
-    secern [FLAGS] --config <FILE>
+    secern [FLAGS] [OPTIONS]
 
 FLAGS:
     -h, --help         Prints help information
@@ -80,7 +80,8 @@ FLAGS:
     -V, --version      Prints version information
 
 OPTIONS:
-    -c, --config <FILE>    Specifies the YAML config file
+    -c, --config <FILE>          Specifies the YAML config file
+    -g, --gen-template <FILE>    Generates an example YAML config file and exits
 ```
 
 Bash

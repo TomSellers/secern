@@ -1,4 +1,5 @@
 use regex::RegexSet;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{self, BufReader, BufWriter};
@@ -148,9 +149,10 @@ fn generate_config(file_name: &str) {
         invert: None,
     };
 
-    let all_sinks = vec![first, second];
+    let mut config = HashMap::new();
+    config.insert(String::from("sinks"), vec![first, second]);
 
-    let yaml_string = serde_yaml::to_string(&all_sinks).unwrap();
+    let yaml_string = serde_yaml::to_string(&config).unwrap();
 
     // FIXFIX add error handling
     file.write_all(yaml_string.as_bytes()).unwrap();
