@@ -14,12 +14,16 @@ readme = "README.md"
 license = "Unlicense OR MIT"
 edition = "2018"
 
+[[bin]]
+bench = false
+path = "src/main.rs"
+name = "secern"
 
 [dependencies]
 clap = "2.33"
 env_logger = "0.8.3"
 log = "0.4"
-regex = "1"
+regex = "1.4.5"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.8.17"
 serde_derive = "1.0"

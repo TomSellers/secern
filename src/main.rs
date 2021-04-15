@@ -11,9 +11,8 @@ use env_logger::Env;
 use log::{error, info};
 
 extern crate serde;
-extern crate serde_yaml;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 // Operational object
 #[derive(Debug)]
@@ -26,7 +25,7 @@ struct FilterConfig {
 }
 
 // Config structures from the YAML config file
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Serialize)]
 struct SinkConfig {
     name: String,
     file_name: String,
@@ -119,6 +118,46 @@ fn load_config(config: &str) -> Vec<FilterConfig> {
     filters
 }
 
+// generate_config emits a sample YAML configuration file
+fn generate_config(file_name: &str) {
+    let path = Path::new(&file_name);
+
+    //FIXFIX - ERROR handling - if path doesn't exist
+    let mut file = match File::create(&path) {
+        Ok(file) => file,
+        Err(e) => {
+            error!(
+                "Unable to create template file '{}' due to error: {}",
+                file_name, e
+            );
+            std::process::exit(1);
+        }
+    };
+
+    let first = SinkConfig {
+        name: "first_sink".to_string(),
+        file_name: "first_output.txt".to_string(),
+        patterns: vec!["^[a-zA-Z0-9]+$".to_string()],
+        invert: None,
+    };
+
+    let second = SinkConfig {
+        name: "second_sink".to_string(),
+        file_name: "second_output.txt".to_string(),
+        patterns: vec!["😎*".to_string()],
+        invert: None,
+    };
+
+    let all_sinks = vec![first, second];
+
+    let yaml_string = serde_yaml::to_string(&all_sinks).unwrap();
+
+    // FIXFIX add error handling
+    file.write_all(yaml_string.as_bytes()).unwrap();
+    file.flush().unwrap();
+    std::process::exit(0);
+}
+
 // final_flush ensures that all buffered file output is written before bailing
 fn final_flush(
     mut filters: Vec<FilterConfig>,
@@ -158,8 +197,15 @@ fn main() {
                     .long("config")
                     .value_name("FILE")
                     .help("Specifies the YAML config file")
-                    .takes_value(true)
-                    .required(true),
+                    .takes_value(true),
+            )
+            .arg(
+                Arg::with_name("generate")
+                    .short("g")
+                    .long("gen-template")
+                    .value_name("FILE")
+                    .help("Generates an example YAML config file and exits")
+                    .takes_value(true),
             )
             .arg(
                 Arg::with_name("no-stdout")
@@ -171,6 +217,10 @@ fn main() {
                 "Disables emmitting info level log events (version, run time, etc) on STDERR",
             ))
             .get_matches();
+
+    if let Some(t) = matches.value_of("generate") {
+        generate_config(t);
+    }
 
     let config: &str;
     match matches.value_of("config") {
