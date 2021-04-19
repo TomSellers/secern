@@ -42,27 +42,6 @@ disable it.
 improvements that can be made. Please open an issue if you find a bug or have
 recommendations for improvements.
 
-## Performance
-
-`secern` is pretty fast thanks to
-[`regex::RegexSet`](https://docs.rs/regex/1.4.5/regex/struct.RegexSet.html) in
-the Rust `regex` crate which allows multiple regular expression patterns to be
-matched in a single pass.
-
-Originally `secern` was Go based. I tested Rust just to see if it was faster at
-this task.  The single threaded Rust version was significantly faster than either
-single or multi-threaded Go.
-
-In tests under WSL2 on Windows 10 I've processed 100 million lines with 2 sinks
-and 9 patterns in about 25 seconds. Native Linux or Windows performance will be
-higher.
-
-General advice to improve performance:
-
-- Limit the number of sinks. Multiple regex patterns on a single sink is fine.
-- Prioritize the sinks and patterns within a sink that are most likely to match.
-- Use `-n` to silence un-matched data on STDOUT if you don't need it.
-
 ## Usage
 
 ```shell
@@ -110,11 +89,44 @@ Get-Content -Head 100 -encoding UTF8 sample.txt | cargo run --release -- --confi
 cargo build --release
 ```
 
+## Performance
+
+`secern` is pretty fast thanks to
+[`regex::RegexSet`](https://docs.rs/regex/1.4.5/regex/struct.RegexSet.html) in
+the Rust `regex` crate which allows multiple regular expression patterns to be
+matched in a single pass.
+
+Originally `secern` was Go based. I tested Rust just to see if it was faster at
+this task.  The single threaded Rust version was significantly faster than either
+single or multi-threaded Go.
+
+In tests under WSL2 on Windows 10 I've processed 100 million lines with 2 sinks
+and 9 patterns in about 25 seconds. Native Linux or Windows performance will be
+higher.
+
+General advice to improve performance:
+
+- Limit the number of sinks. Multiple regex patterns on a single sink is fine.
+- Prioritize the sinks and patterns within a sink that are most likely to match.
+- Use `-n` to silence un-matched data on STDOUT if you don't need it.
+
+## Failure
+
+If `secern` fails to write to any of its outputs then it will immediately exit
+with an error message (unless silenced) and a non-zero exit code. The reasoning
+is that if any output is incorrect then the whole process is incomplete and
+incorrect.
+
 ## TODO
 
-- FIXFIX: Handle SIGTERM / Ctrl-C
-- FIXFIX: Re-implement tests after porting to Rust
-- FIXFIX: Handle if output directory is missing
-- FIXFIX: Warning about paths in the config and needing to use / or autofix
-- FEATURE: Autodetect when to use more than one CPU based on regex parse time
-- CLI: flag to validate config files
+- BUGFIX:
+  - Handle SIGTERM / Ctrl-C
+  - Re-implement tests after porting to Rust
+  - Handle if output directory is missing
+  - Warning about paths in the config and needing to use / or autofix
+  - Generate Template: refuse to overwrite existing file
+- FEATURE:
+  - Implement PCRE2 support
+  - Flag to validate config files
+  - Autodetect when to use more than one CPU based on regex parse time
+  
