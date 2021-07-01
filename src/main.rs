@@ -70,6 +70,14 @@ fn main() {
             ))
             .get_matches();
 
+    let log_level: String;
+    if matches.is_present("quiet") {
+        log_level = String::from("warn");
+    } else {
+        log_level = String::from("info");
+    }
+    env_logger::Builder::from_env(Env::default().default_filter_or(log_level)).init();
+
     if let Some(t) = matches.value_of("generate") {
         config::generate_config(t);
     }
@@ -84,14 +92,6 @@ fn main() {
             std::process::exit(1)
         }
     }
-
-    let log_level: String;
-    if matches.is_present("quiet") {
-        log_level = String::from("warn");
-    } else {
-        log_level = String::from("info");
-    }
-    env_logger::Builder::from_env(Env::default().default_filter_or(log_level)).init();
 
     info!("{} {}", crate_name!(), crate_version!());
 

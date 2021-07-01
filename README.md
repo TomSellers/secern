@@ -128,5 +128,6 @@ incorrect.
 - FEATURE:
   - Implement PCRE2 support
   - Flag to validate config files
+  - Combine output when more than one sink specifies the same output
   - Autodetect when to use more than one CPU based on regex parse time
   

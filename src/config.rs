@@ -3,6 +3,7 @@ use regex::RegexSet;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
+use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::io::BufWriter;
 use std::path::Path;
@@ -116,7 +117,7 @@ pub fn generate_config(file_name: &str) {
     let path = Path::new(&file_name);
 
     //FIXFIX - ERROR handling - if path doesn't exist
-    let mut file = match File::create(&path) {
+    let mut file = match OpenOptions::new().write(true).create_new(true).open(&path) {
         Ok(file) => file,
         Err(e) => {
             error!(
