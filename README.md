@@ -53,10 +53,11 @@ USAGE:
     secern [FLAGS] [OPTIONS]
 
 FLAGS:
-    -h, --help         Prints help information
-    -n, --no-stdout    Disables emmitting unfiltered data on STDOUT
-    -q, --quiet        Disables emmitting info level log events (version, run time, etc) on STDERR
-    -V, --version      Prints version information
+    -h, --help             Prints help information
+    -n, --no-stdout        Disables emmitting unfiltered data on STDOUT
+    -q, --quiet            Disables emmitting info level log events (version, run time, etc) on STDERR
+    -v, --validate-only    Validate that the config file specified by -c is correctly formed.
+    -V, --version          Prints version information
 
 OPTIONS:
     -c, --config <FILE>          Specifies the YAML config file
@@ -122,11 +123,9 @@ incorrect.
 - BUGFIX:
   - Handle SIGTERM / Ctrl-C
   - Re-implement tests after porting to Rust
-  - Handle if output directory is missing
   - Warning about paths in the config and needing to use / or autofix
 - FEATURE:
   - Implement PCRE2 support
-  - Flag to validate config files
   - Combine output when more than one sink specifies the same output
   - Autodetect when to use more than one CPU based on regex parse time
   

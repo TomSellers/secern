@@ -60,6 +60,12 @@ fn main() {
                     .takes_value(true),
             )
             .arg(
+                Arg::with_name("validate-only")
+                    .short("v")
+                    .long("validate-only")
+                    .help("Validate that the config file specified by -c is correctly formed."),
+            )
+            .arg(
                 Arg::with_name("no-stdout")
                     .short("n")
                     .long("no-stdout")
@@ -70,6 +76,7 @@ fn main() {
             ))
             .get_matches();
 
+    // Initialize logging
     let log_level: String;
     if matches.is_present("quiet") {
         log_level = String::from("warn");
@@ -77,6 +84,8 @@ fn main() {
         log_level = String::from("info");
     }
     env_logger::Builder::from_env(Env::default().default_filter_or(log_level)).init();
+
+    info!("{} {}", crate_name!(), crate_version!());
 
     if let Some(t) = matches.value_of("generate") {
         config::generate_config(t);
@@ -93,10 +102,19 @@ fn main() {
         }
     }
 
-    info!("{} {}", crate_name!(), crate_version!());
+    let mut validate_only: bool = false;
+    if matches.is_present("validate-only") {
+        validate_only = true;
+    }
 
     info!("Loading configuration file: {}", config);
-    let mut filters = config::load_config(config);
+    let mut filters = config::load_config(config, validate_only);
+
+    if validate_only {
+        info!("Configuration summary");
+        config::display_config_summary(filters);
+        std::process::exit(0)
+    }
 
     info!("Starting data processing.");
     let start = Instant::now();

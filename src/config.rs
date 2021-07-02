@@ -1,4 +1,4 @@
-use log::error;
+use log::{error, info};
 use regex::RegexSet;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -32,7 +32,7 @@ struct SinkList {
     sinks: Vec<SinkConfig>,
 }
 
-pub fn load_config(config: &str) -> Vec<FilterConfig> {
+pub fn load_config(config: &str, validate_only: bool) -> Vec<FilterConfig> {
     let mut filters: Vec<FilterConfig> = Vec::new();
 
     let f = File::open(config);
@@ -59,6 +59,27 @@ pub fn load_config(config: &str) -> Vec<FilterConfig> {
         }
     };
 
+    // Make a pass through and verify that all the regex compiles.  By doing it
+    // this way we can print all of the errors at once so users can fix them
+    // at one time instead of having to fix one, and rerun to check the rest.
+    let mut config_error: bool = false;
+    for sink in &sink_list.sinks {
+        match RegexSet::new(&sink.patterns) {
+            Ok(_) => (),
+            Err(e) => {
+                error!(
+                    "Error parsing Regex pattern in sink named '{}' due to error: {}",
+                    sink.name, e
+                );
+                config_error = true;
+            }
+        }
+    }
+
+    if config_error {
+        std::process::exit(1);
+    }
+
     for sink in sink_list.sinks {
         let filter_set = RegexSet::new(&sink.patterns);
         let filter_set: RegexSet = match filter_set {
@@ -73,7 +94,7 @@ pub fn load_config(config: &str) -> Vec<FilterConfig> {
         };
 
         let file: Option<BufWriter<std::fs::File>>;
-        if sink.file_name == "null" {
+        if sink.file_name == "null" || validate_only {
             file = None;
         } else {
             let path = Path::new(&sink.file_name);
@@ -85,25 +106,24 @@ pub fn load_config(config: &str) -> Vec<FilterConfig> {
                     Err(e) => {
                         error!(
                             "Output file creation failed while creating directory '{}' due to error: {}",
-                            prefix.display(),
-                            e
-                        );
+                            prefix.display(), e);
                         std::process::exit(1);
                     }
                 }
             }
 
-            file =
-                match File::create(&path) {
-                    Ok(file) => Some(std::io::BufWriter::new(file)),
-                    Err(e) => {
-                        error!(
+            file = match File::create(&path) {
+                Ok(file) => Some(std::io::BufWriter::new(file)),
+                Err(e) => {
+                    error!(
                         "Unable to create output file '{}' for sink named '{}' due to error: {}",
-                        path.display(), sink.name, e
+                        path.display(),
+                        sink.name,
+                        e
                     );
-                        std::process::exit(1);
-                    }
-                };
+                    std::process::exit(1);
+                }
+            };
         }
 
         let invert: bool;
@@ -189,4 +209,30 @@ pub fn generate_config(file_name: &str) {
     file.write_all(yaml_string.as_bytes()).unwrap();
     file.flush().unwrap();
     std::process::exit(0);
+}
+
+pub fn display_config_summary(filters: Vec<FilterConfig>) {
+    let mut name_len = 0;
+    let mut file_name_len = 0;
+
+    for filter in &filters {
+        if filter.name.chars().count() > name_len {
+            name_len = filter.name.chars().count()
+        }
+
+        if filter.file_name.chars().count() > name_len {
+            file_name_len = filter.file_name.chars().count()
+        }
+    }
+
+    for filter in filters {
+        info!(
+            "Sink name: {:<name_len$} Output file name: {:<file_name_len$} Invert match: {}",
+            filter.name,
+            filter.file_name,
+            filter.invert,
+            name_len = name_len + 2,
+            file_name_len = file_name_len + 2,
+        )
+    }
 }
