@@ -77,19 +77,33 @@ pub fn load_config(config: &str) -> Vec<FilterConfig> {
             file = None;
         } else {
             let path = Path::new(&sink.file_name);
-            let display = path.display();
 
-            //FIXFIX - ERROR handling - if path doesn't exist
-            file = match File::create(&path) {
-                Ok(file) => Some(std::io::BufWriter::new(file)),
-                Err(e) => {
-                    error!(
-                        "Unable to create output file '{}' for sink named '{}' due to error: {}",
-                        display, sink.name, e
-                    );
-                    std::process::exit(1);
+            let prefix = path.parent().unwrap();
+            if !prefix.exists() {
+                match std::fs::create_dir_all(prefix) {
+                    Ok(_) => (),
+                    Err(e) => {
+                        error!(
+                            "Output file creation failed while creating directory '{}' due to error: {}",
+                            prefix.display(),
+                            e
+                        );
+                        std::process::exit(1);
+                    }
                 }
-            };
+            }
+
+            file =
+                match File::create(&path) {
+                    Ok(file) => Some(std::io::BufWriter::new(file)),
+                    Err(e) => {
+                        error!(
+                        "Unable to create output file '{}' for sink named '{}' due to error: {}",
+                        path.display(), sink.name, e
+                    );
+                        std::process::exit(1);
+                    }
+                };
         }
 
         let invert: bool;
@@ -116,16 +130,40 @@ pub fn load_config(config: &str) -> Vec<FilterConfig> {
 pub fn generate_config(file_name: &str) {
     let path = Path::new(&file_name);
 
+    let prefix = path.parent().unwrap();
+    if !prefix.exists() {
+        match std::fs::create_dir_all(prefix) {
+            Ok(_) => (),
+            Err(e) => {
+                error!(
+                    "Template generation failed while creating directory '{}' due to error: {}",
+                    prefix.display(),
+                    e
+                );
+                std::process::exit(1);
+            }
+        }
+    }
+
     //FIXFIX - ERROR handling - if path doesn't exist
     let mut file = match OpenOptions::new().write(true).create_new(true).open(&path) {
         Ok(file) => file,
-        Err(e) => {
-            error!(
-                "Unable to create template file '{}' due to error: {}",
-                file_name, e
-            );
-            std::process::exit(1);
-        }
+        Err(e) => match e.kind() {
+            std::io::ErrorKind::AlreadyExists => {
+                error!(
+                    "The specified template file '{}' already exists and will NOT be overwritten.",
+                    file_name,
+                );
+                std::process::exit(1);
+            }
+            _ => {
+                error!(
+                    "Unable to create template file '{}' due to error: {}",
+                    file_name, e,
+                );
+                std::process::exit(1);
+            }
+        },
     };
 
     let first = SinkConfig {

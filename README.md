@@ -124,7 +124,6 @@ incorrect.
   - Re-implement tests after porting to Rust
   - Handle if output directory is missing
   - Warning about paths in the config and needing to use / or autofix
-  - Generate Template: refuse to overwrite existing file
 - FEATURE:
   - Implement PCRE2 support
   - Flag to validate config files
