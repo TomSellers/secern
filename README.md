@@ -13,7 +13,7 @@ following config to:
 - save all of the names ending in `.net` in `dot_net.txt`
 - save all of the names ending in `.com` in `dot_com.txt`
 - save all of the names ending in `.gov` or `.gov.uk` to `government.txt`
-- emit all lines that don't match either of the above on STDOUT
+- emit all lines that don't match any of the above on STDOUT
 
 Example config
 
