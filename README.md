@@ -1,5 +1,7 @@
 # secern
 
+[![Security Audit](https://github.com/TomSellers/secern/actions/workflows/audit.yaml/badge.svg)](https://github.com/TomSellers/secern/actions/workflows/audit.yaml)
+
 ## Overview
 
 `secern` is a command line string sifting program. It accepts data on STDIN,
