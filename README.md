@@ -2,6 +2,15 @@
 
 [![Security Audit](https://github.com/TomSellers/secern/actions/workflows/audit.yaml/badge.svg)](https://github.com/TomSellers/secern/actions/workflows/audit.yaml)
 
+## Table of Contents
+
+1. [Overview](#overview)
+1. [Usage](#usage)
+1. [Building](#building)
+1. [Performance](#performance)
+1. [Failure](#failure)
+1. [TODO](#todo)
+
 ## Overview
 
 `secern` is a command line string sifting program. It accepts data on STDIN,
@@ -43,6 +52,8 @@ disable it.
 **NOTE**: I built `secern` to solve a problem and to learn Rust. There are likely
 improvements that can be made. Please open an issue if you find a bug or have
 recommendations for improvements.
+
+[^back to top](#secern)
 
 ## Usage
 
@@ -86,11 +97,15 @@ Get-Content -Head 100 -encoding UTF8 sample.txt | secern -config filter.yaml
 Get-Content -Head 100 -encoding UTF8 sample.txt | cargo run --release -- --config filter.yaml
 ```
 
+[^back to top](#secern)
+
 ## Building
 
 ```shell
 cargo build --release
 ```
+
+[^back to top](#secern)
 
 ## Performance
 
@@ -113,6 +128,8 @@ General advice to improve performance:
 - Prioritize the sinks and patterns within a sink that are most likely to match.
 - Use `-n` to silence un-matched data on STDOUT if you don't need it.
 
+[^back to top](#secern)
+
 ## Failure
 
 If `secern` fails to write to any of its outputs then it will immediately exit
@@ -120,14 +137,23 @@ with an error message (unless silenced) and a non-zero exit code. The reasoning
 is that if any output is incorrect then the whole process is incomplete and
 incorrect.
 
+[^back to top](#secern)
+
 ## TODO
 
 - BUGFIX:
   - Handle SIGTERM / Ctrl-C
   - Re-implement tests after porting to Rust
   - Warning about paths in the config and needing to use / or autofix
+- PROJECT
+  - Generate Docs
+  - Create build artifacts upon release
+    - macos (x64, M1)
+    - Linux (x64, arm)
+    - Windows
 - FEATURE:
   - Implement PCRE2 support
   - Combine output when more than one sink specifies the same output
   - Autodetect when to use more than one CPU based on regex parse time
-  
+
+[^back to top](#secern)
