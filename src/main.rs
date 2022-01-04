@@ -1,5 +1,6 @@
 mod config;
 
+use std::fs;
 use std::io::prelude::*;
 use std::io::{self, BufReader, BufWriter};
 
@@ -38,43 +39,45 @@ fn final_flush(
 
 //FIXFIX - Handle Ctrl-C
 fn main() {
-    let matches =
-        App::new(crate_name!())
-            .version(crate_version!())
-            .author(crate_authors!(","))
-            .about(crate_description!())
-            .arg(
-                Arg::with_name("config")
-                    .short("c")
-                    .long("config")
-                    .value_name("FILE")
-                    .help("Specifies the YAML config file")
-                    .takes_value(true),
-            )
-            .arg(
-                Arg::with_name("generate")
-                    .short("g")
-                    .long("gen-template")
-                    .value_name("FILE")
-                    .help("Generates an example YAML config file and exits")
-                    .takes_value(true),
-            )
-            .arg(
-                Arg::with_name("validate-only")
-                    .short("v")
-                    .long("validate-only")
-                    .help("Validate that the config file specified by -c is correctly formed."),
-            )
-            .arg(
-                Arg::with_name("no-stdout")
-                    .short("n")
-                    .long("no-stdout")
-                    .help("Disables emmitting unfiltered data on STDOUT"),
-            )
-            .arg(Arg::with_name("quiet").short("q").long("quiet").help(
-                "Disables emmitting info level log events (version, run time, etc) on STDERR",
-            ))
-            .get_matches();
+    let matches = App::new(crate_name!())
+        .version(crate_version!())
+        .author(crate_authors!(","))
+        .about(crate_description!())
+        .arg(
+            Arg::with_name("config")
+                .short("c")
+                .long("config")
+                .value_name("FILE")
+                .help("Specifies the YAML config file")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("generate")
+                .short("g")
+                .long("gen-template")
+                .value_name("FILE")
+                .help("Generates an example YAML config file and exits")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("validate-only")
+                .short("v")
+                .long("validate-only")
+                .help("Validate that the config file specified by -c is correctly formed."),
+        )
+        .arg(
+            Arg::with_name("no-stdout")
+                .short("n")
+                .long("no-stdout")
+                .help("Disables emmitting unfiltered data on STDOUT"),
+        )
+        .arg(
+            Arg::with_name("quiet")
+                .short("q")
+                .long("quiet")
+                .help("Disables emmitting info level log events (version, run time, etc) on STDERR"),
+        )
+        .get_matches();
 
     // Initialize logging
     let log_level: String;
@@ -108,7 +111,20 @@ fn main() {
     }
 
     info!("Loading configuration file: {}", config);
-    let mut filters = config::load_config(config, validate_only);
+
+    let config_data = fs::read_to_string(config);
+    let config_data = match config_data {
+        Ok(data) => data,
+        Err(e) => {
+            error!(
+                "Unable to open specified configuration file ({}) due to error: {}",
+                config, e
+            );
+            std::process::exit(1);
+        }
+    };
+
+    let mut filters = config::process_config(config, config_data, validate_only);
 
     if validate_only {
         info!("Configuration summary");

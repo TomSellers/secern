@@ -150,6 +150,7 @@ incorrect.
   - Create build artifacts upon release
     - macos (x64, M1)
     - Linux (x64, arm)
+      - Debian packages of the above
     - Windows
 - FEATURE:
   - Implement PCRE2 support

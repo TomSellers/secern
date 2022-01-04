@@ -18,6 +18,18 @@ pub struct FilterConfig {
     pub invert: bool,
 }
 
+// For TESTING purposes, implement our own PartialEq since we can't directly
+// compare FilterConfig variables due to the use of BufWriters and RegexSet.
+impl PartialEq for FilterConfig {
+    fn eq(&self, other: &Self) -> bool {
+        return self.name == other.name
+            && self.file_name == other.file_name
+            && self.regex_set.len() == other.regex_set.len()
+            && self.regex_set.patterns() == other.regex_set.patterns()
+            && self.invert == other.invert;
+    }
+}
+
 // Config structures from the YAML config file
 #[derive(Deserialize, Debug, Serialize)]
 pub struct SinkConfig {
@@ -32,28 +44,16 @@ struct SinkList {
     sinks: Vec<SinkConfig>,
 }
 
-pub fn load_config(config: &str, validate_only: bool) -> Vec<FilterConfig> {
+pub fn process_config(config_filename: &str, config_data: String, validate_only: bool) -> Vec<FilterConfig> {
     let mut filters: Vec<FilterConfig> = Vec::new();
 
-    let f = File::open(config);
-    let f = match f {
-        Ok(file) => file,
-        Err(e) => {
-            error!(
-                "Unable to open specified configuration file ({}) due to error: {}",
-                config, e
-            );
-            std::process::exit(1);
-        }
-    };
-
-    let sink_list = serde_yaml::from_reader(f);
+    let sink_list = serde_yaml::from_str(&config_data);
     let sink_list: SinkList = match sink_list {
         Ok(data) => data,
         Err(e) => {
             error!(
                 "Error parsing configuration file ({}) due to error: {}",
-                config, e
+                config_filename, e
             );
             std::process::exit(1);
         }
@@ -61,7 +61,7 @@ pub fn load_config(config: &str, validate_only: bool) -> Vec<FilterConfig> {
 
     // Make a pass through and verify that all the regex compiles.  By doing it
     // this way we can print all of the errors at once so users can fix them
-    // at one time instead of having to fix one, and rerun to check the rest.
+    // at one time instead of having to fix one and rerun to check the rest.
     let mut config_error: bool = false;
     for sink in &sink_list.sinks {
         match RegexSet::new(&sink.patterns) {
@@ -106,7 +106,9 @@ pub fn load_config(config: &str, validate_only: bool) -> Vec<FilterConfig> {
                     Err(e) => {
                         error!(
                             "Output file creation failed while creating directory '{}' due to error: {}",
-                            prefix.display(), e);
+                            prefix.display(),
+                            e
+                        );
                         std::process::exit(1);
                     }
                 }
@@ -234,5 +236,52 @@ pub fn display_config_summary(filters: Vec<FilterConfig>) {
             name_len = name_len + 2,
             file_name_len = file_name_len + 2,
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_process_config() {
+        env_logger::init();
+
+        // YAML representation
+        let test_config = r#"
+---
+sinks:
+  - name: first_sink
+    file_name: first_output.txt
+    patterns:
+      - "^[a-zA-Z0-9]+$"
+  - name: second_sink
+    file_name: null
+    patterns:
+      - 😎*
+"#
+        .to_string();
+
+        // Process the YAML representation
+        let processed_config = process_config("test_config.yaml", test_config, true);
+
+        // Matching struct
+        let first = FilterConfig {
+            name: "first_sink".to_string(),
+            file_name: "first_output.txt".to_string(),
+            file: None,
+            regex_set: RegexSet::new(vec!["^[a-zA-Z0-9]+$".to_string()]).unwrap(),
+            invert: false,
+        };
+        let second = FilterConfig {
+            name: "second_sink".to_string(),
+            file_name: "null".to_string(),
+            file: None,
+            regex_set: RegexSet::new(vec!["😎*".to_string()]).unwrap(),
+            invert: false,
+        };
+        let reference_config = vec![first, second];
+
+        assert_eq!(processed_config, reference_config);
     }
 }
