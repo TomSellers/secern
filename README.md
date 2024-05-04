@@ -142,11 +142,11 @@ incorrect.
 ## TODO
 
 - BUGFIX:
-  - Handle SIGTERM / Ctrl-C
   - Re-implement tests after porting to Rust
   - Warning about paths in the config and needing to use / or autofix
 - PROJECT
   - Generate Docs
+    - Doc use of `null` in `file`
   - Create build artifacts upon release
     - macos (x64, M1)
     - Linux (x64, arm)

@@ -1,6 +1,6 @@
 [package]
 name = "secern"
-version = "0.9.0"
+version = "0.9.1"
 authors = ["Tom Sellers <tom@fadedcode.net>"]
 description = """
 secern is a command line string sifting program that leverages
@@ -12,7 +12,7 @@ homepage = "https://github.com/TomSellers/secern"
 categories = ["command-line-utilities", "text-processing"]
 readme = "README.md"
 license = "Unlicense OR MIT"
-edition = "2018"
+edition = "2021"
 
 [[bin]]
 bench = false
@@ -20,12 +20,12 @@ path = "src/main.rs"
 name = "secern"
 
 [dependencies]
-clap = "2.34"
-env_logger = "0.8.3"
+clap = { version = "4.5", features = ["cargo","derive"] }
+env_logger = "0.11"
 log = "0.4"
-regex = "1.5.4"
+regex = "1.10.3"
 serde = { version = "1.0", features = ["derive"] }
-serde_yaml = "0.8.17"
+serde_yaml = "0.9"
 serde_derive = "1.0"
 
 

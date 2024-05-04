@@ -6,7 +6,7 @@ use std::io::{self, BufReader, BufWriter};
 
 use std::time::Instant;
 
-use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg};
+use clap::{crate_authors, crate_description, crate_name, crate_version, Arg, ArgAction, Command};
 
 use env_logger::Env;
 use log::{error, info};
@@ -37,51 +37,53 @@ fn final_flush(
     stdio_writer.flush().unwrap();
 }
 
-//FIXFIX - Handle Ctrl-C
 fn main() {
-    let matches = App::new(crate_name!())
+    let matches = Command::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!(","))
         .about(crate_description!())
         .arg(
-            Arg::with_name("config")
-                .short("c")
+            Arg::new("config")
+                .short('c')
                 .long("config")
                 .value_name("FILE")
                 .help("Specifies the YAML config file")
-                .takes_value(true),
+                .action(ArgAction::Set),
         )
         .arg(
-            Arg::with_name("generate")
-                .short("g")
+            Arg::new("generate")
+                .short('g')
                 .long("gen-template")
                 .value_name("FILE")
                 .help("Generates an example YAML config file and exits")
-                .takes_value(true),
+                .action(ArgAction::Set),
         )
         .arg(
-            Arg::with_name("validate-only")
-                .short("v")
+            Arg::new("validate-only")
+                .short('v')
                 .long("validate-only")
-                .help("Validate that the config file specified by -c is correctly formed."),
+                .help("Validate that the config file specified by -c is correctly formed.")
+                .action(ArgAction::SetTrue),
         )
         .arg(
-            Arg::with_name("no-stdout")
-                .short("n")
+            Arg::new("no-stdout")
+                .short('n')
                 .long("no-stdout")
-                .help("Disables emmitting unfiltered data on STDOUT"),
+                .help("Disables emmitting unfiltered data on STDOUT")
+                .action(ArgAction::SetTrue),
         )
         .arg(
-            Arg::with_name("quiet")
-                .short("q")
+            Arg::new("quiet")
+                .short('q')
                 .long("quiet")
-                .help("Disables emmitting info level log events (version, run time, etc) on STDERR"),
+                .help("Disables emmitting info level log events (version, run time, etc) on STDERR")
+                .action(ArgAction::SetTrue),
         )
         .get_matches();
 
     // Initialize logging
     let log_level: String;
-    if matches.is_present("quiet") {
+    if matches.get_flag("quiet") {
         log_level = String::from("warn");
     } else {
         log_level = String::from("info");
@@ -90,12 +92,12 @@ fn main() {
 
     info!("{} {}", crate_name!(), crate_version!());
 
-    if let Some(t) = matches.value_of("generate") {
+    if let Some(t) = matches.get_one::<String>("generate") {
         config::generate_config(t);
     }
 
     let config: &str;
-    match matches.value_of("config") {
+    match matches.get_one::<String>("config") {
         Some(s) => config = s,
         None => {
             // clap ensures that the value of `config` is populated but handle
@@ -106,7 +108,7 @@ fn main() {
     }
 
     let mut validate_only: bool = false;
-    if matches.is_present("validate-only") {
+    if matches.get_flag("validate-only") {
         validate_only = true;
     }
 
@@ -179,7 +181,7 @@ fn main() {
             }
         }
 
-        if !found_match && !matches.is_present("no-stdout") {
+        if !found_match && !matches.get_flag("no-stdout") {
             // TODO: Error handling when writing to STDOUT + broken pipe (head -n 10)
             //       thread 'main' panicked at 'failed printing to stdout: Broken pipe (os error 32)', library/std/src/io/stdio.rs:940:9
             //       Consider how to close down the various filter files correctly
