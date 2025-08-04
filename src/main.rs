@@ -6,7 +6,7 @@ use std::io::{self, BufReader, BufWriter};
 
 use std::time::Instant;
 
-use clap::{crate_authors, crate_description, crate_name, crate_version, Arg, ArgAction, Command};
+use clap::{Arg, ArgAction, Command, crate_authors, crate_description, crate_name, crate_version};
 
 use env_logger::Env;
 use log::{error, info};
