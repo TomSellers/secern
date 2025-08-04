@@ -12,7 +12,7 @@ homepage = "https://github.com/TomSellers/secern"
 categories = ["command-line-utilities", "text-processing"]
 readme = "README.md"
 license = "Unlicense OR MIT"
-edition = "2021"
+edition = "2024"
 
 [[bin]]
 bench = false
@@ -20,10 +20,10 @@ path = "src/main.rs"
 name = "secern"
 
 [dependencies]
-clap = { version = "4.5", features = ["cargo","derive"] }
+clap = { version = "4.5", features = ["cargo", "derive"] }
 env_logger = "0.11"
 log = "0.4"
-regex = "1.10.3"
+regex = "1.11"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.9"
 serde_derive = "1.0"
