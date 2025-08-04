@@ -1,6 +1,6 @@
 [package]
 name = "secern"
-version = "0.9.1"
+version = "0.9.2"
 authors = ["Tom Sellers <tom@fadedcode.net>"]
 description = """
 secern is a command line string sifting program that leverages

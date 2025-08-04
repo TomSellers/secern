@@ -155,6 +155,9 @@ fn main() {
                     Some(out_file) => {
                         match out_file.write_all(line.as_bytes()) {
                             Ok(_) => (),
+                            Err(e) if e.kind() == std::io::ErrorKind::BrokenPipe => {
+                                std::process::exit(0);
+                            }
                             Err(e) => {
                                 error!(
                                     "Unable to write to output file '{}' for sink named '{}' due to error: {}",
