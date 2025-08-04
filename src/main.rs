@@ -82,12 +82,7 @@ fn main() {
         .get_matches();
 
     // Initialize logging
-    let log_level: String;
-    if matches.get_flag("quiet") {
-        log_level = String::from("warn");
-    } else {
-        log_level = String::from("info");
-    }
+    let log_level = if matches.get_flag("quiet") { "warn" } else { "info" };
     env_logger::Builder::from_env(Env::default().default_filter_or(log_level)).init();
 
     info!("{} {}", crate_name!(), crate_version!());
@@ -96,32 +91,25 @@ fn main() {
         config::generate_config(t);
     }
 
-    let config: &str;
-    match matches.get_one::<String>("config") {
-        Some(s) => config = s,
+    let config: &str = match matches.get_one::<String>("config") {
+        Some(s) => s,
         None => {
             // clap ensures that the value of `config` is populated but handle
             // missing values here anyway.
             error!("Please specify the configuration file!");
             std::process::exit(1)
         }
-    }
+    };
 
-    let mut validate_only: bool = false;
-    if matches.get_flag("validate-only") {
-        validate_only = true;
-    }
+    let validate_only: bool = matches.get_flag("validate-only");
 
-    info!("Loading configuration file: {}", config);
+    info!("Loading configuration file: {config}");
 
     let config_data = fs::read_to_string(config);
     let config_data = match config_data {
         Ok(data) => data,
         Err(e) => {
-            error!(
-                "Unable to open specified configuration file ({}) due to error: {}",
-                config, e
-            );
+            error!("Unable to open specified configuration file ({config}) due to error: {e}");
             std::process::exit(1);
         }
     };
@@ -195,7 +183,7 @@ fn main() {
             match stdio_writer.write_all(line.as_bytes()) {
                 Ok(_) => (),
                 Err(e) => {
-                    error!("Unable to write data to STDOUT due to error: {}", e);
+                    error!("Unable to write data to STDOUT due to error: {e}");
                     std::process::exit(1);
                 }
             };
@@ -203,7 +191,7 @@ fn main() {
             match stdio_writer.write_all(b"\n") {
                 Ok(_) => (),
                 Err(e) => {
-                    error!("Unable to write data to STDOUT due to error: {}", e);
+                    error!("Unable to write data to STDOUT due to error: {e}");
                     std::process::exit(1);
                 }
             };
@@ -213,5 +201,5 @@ fn main() {
     final_flush(filters, stdio_writer);
 
     let duration = start.elapsed();
-    info!("Ending data processing. Time elapsed was: {:?}", duration);
+    info!("Ending data processing. Time elapsed was: {duration:?}");
 }

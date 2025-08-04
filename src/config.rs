@@ -22,11 +22,11 @@ pub struct FilterConfig {
 // compare FilterConfig variables due to the use of BufWriters and RegexSet.
 impl PartialEq for FilterConfig {
     fn eq(&self, other: &Self) -> bool {
-        return self.name == other.name
+        self.name == other.name
             && self.file_name == other.file_name
             && self.regex_set.len() == other.regex_set.len()
             && self.regex_set.patterns() == other.regex_set.patterns()
-            && self.invert == other.invert;
+            && self.invert == other.invert
     }
 }
 
@@ -51,10 +51,7 @@ pub fn process_config(config_filename: &str, config_data: String, validate_only:
     let sink_list: SinkList = match sink_list {
         Ok(data) => data,
         Err(e) => {
-            error!(
-                "Error parsing configuration file ({}) due to error: {}",
-                config_filename, e
-            );
+            error!("Error parsing configuration file ({config_filename}) due to error: {e}");
             std::process::exit(1);
         }
     };
@@ -173,16 +170,12 @@ pub fn generate_config(file_name: &str) {
         Err(e) => match e.kind() {
             std::io::ErrorKind::AlreadyExists => {
                 error!(
-                    "The specified template file '{}' already exists and will NOT be overwritten.",
-                    file_name,
+                    "The specified template file '{file_name}' already exists and will NOT be overwritten."
                 );
                 std::process::exit(1);
             }
             _ => {
-                error!(
-                    "Unable to create template file '{}' due to error: {}",
-                    file_name, e,
-                );
+                error!("Unable to create template file '{file_name}' due to error: {e}");
                 std::process::exit(1);
             }
         },
